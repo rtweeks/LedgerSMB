@@ -390,6 +390,37 @@ sub new {
     return $self;
 }
 
+sub new_UI {
+    my $class = shift;
+    my $request = shift;
+
+    return $class->new(
+        @_,
+        format => 'HTML' ,
+        path => 'UI',
+        user => $request->{_user},
+        locale => $request->{_locale},
+        additional_vars => {
+            settings => {
+               dojo_theme =>
+                  ($LedgerSMB::App_State::Company_Config->{dojo_theme}
+                   // LedgerSMB::Sysconfig::dojo_theme()),
+               PRINTERS => [
+                  ( map { { text => $_, value => $_ } }
+                    keys %LedgerSMB::Sysconfig::printers,
+                    {
+                       text => ($LedgerSMB::App_State::Locale ?
+                                $LedgerSMB::App_State::Locale->text('Screen')
+                                 : 'Screen' ),
+                       value => 'screen'
+                    } )
+               ],
+               LIST_FORMATS => sub { return available_formats(); },
+            },
+        },
+    );
+}
+
 sub preprocess {
     my ($rawvars, $escape) = @_;
     return undef unless defined $rawvars;
